@@ -1,14 +1,14 @@
 package com.arini.paiment.model;
 
-public class PayResponse {
+public class AppResponse {
     private boolean success;
     private String message;
 
 
-    public PayResponse() {
+    public AppResponse() {
     }
 
-    public PayResponse(boolean success, String message) {
+    public AppResponse(boolean success, String message) {
         this.success = success;
         this.message = message;
     }
@@ -31,7 +31,7 @@ public class PayResponse {
 
     @Override
     public String toString() {
-        return "PayResponse [success=" + success + ", message=" + message + "]";
+        return "AppResponse [success=" + success + ", message=" + message + "]";
     }
 }
 

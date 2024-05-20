@@ -1,7 +1,9 @@
 package com.arini.paiment.repository;
 
 
+import com.arini.paiment.model.ClassRoom;
 import com.arini.paiment.model.Err;
+import com.arini.paiment.model.Student;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -9,14 +11,15 @@ import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public class PayRepository {
+public class ChargeRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public PayRepository(JdbcTemplate jdbcTemplate) {
+    public ChargeRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -30,6 +33,21 @@ public class PayRepository {
 
 
 
+
+
+    public Err UpdateStudent(Student student) {
+        String sql = "UPDATE students SET amount = ? WHERE student_id = ?;";
+        Err err = new Err("");
+
+        try{
+            jdbcTemplate.update(sql, student.getAmount(), student.getStudentID());
+            return null;
+        }catch (DataAccessException e){
+            err.Message = e.getMessage();
+            return err;
+        }
+
+    }
 
     public Err CheckPurchased(UUID studentID, UUID classroomID, String month) {
         String sql = "SELECT EXISTS(SELECT 1 FROM  subscriptions WHERE classroom_id = ? AND student_id = ? LIMIT 1 ;";

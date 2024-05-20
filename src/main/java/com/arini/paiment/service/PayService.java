@@ -1,10 +1,11 @@
 package com.arini.paiment.service;
 
 
+import com.arini.paiment.model.AppResponse;
 import com.arini.paiment.model.ClassRoom;
 import com.arini.paiment.model.Err;
-import com.arini.paiment.model.PayResponse;
 import com.arini.paiment.model.Student;
+import com.arini.paiment.repository.AppRepository;
 import com.arini.paiment.repository.PayRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -16,14 +17,16 @@ import java.util.UUID;
 public class PayService {
 
     private final PayRepository payRepository;
+    private final AppRepository appRepository;
 
-    public PayService(PayRepository payRepository) {
+    public PayService(PayRepository payRepository,AppRepository appRepository) {
         this.payRepository = payRepository;
+        this.appRepository = appRepository;
     }
 
 
     @Transactional
-    public PayResponse payClassRoom(UUID classroomID, UUID studentID, String month) {
+    public AppResponse payClassRoom(UUID classroomID, UUID studentID, String month) {
 
         Student student;
         ClassRoom classRoom;
@@ -32,7 +35,7 @@ public class PayService {
              classRoom = classRoomOption.get();
         }
         else {
-            return new PayResponse(false,"classroom not found");
+            return new AppResponse(false,"classroom not found");
         }
 
 
@@ -41,14 +44,14 @@ public class PayService {
              student = studentOption.get();
         }
         else {
-            return new PayResponse(false,"student not found");
+            return new AppResponse(false,"student not found");
         }
 
         //        check if already purchased
         var checkPurchasedErr =  payRepository.CheckPurchased(studentID,classroomID,month);
 
         if (checkPurchasedErr != null){
-            return new PayResponse(false,checkPurchasedErr.Message);
+            return new AppResponse(false,checkPurchasedErr.Message);
         }
 
 
@@ -56,26 +59,26 @@ public class PayService {
         var classRoomPrice = classRoom.getPrice();
 
         if (studentAmount < classRoomPrice) {
-            return new PayResponse(false,"amount not enough");
+            return new AppResponse(false,"amount not enough");
         }
 
         studentAmount -= classRoomPrice;
         student.setAmount(studentAmount);
 
-        var err = payRepository.UpdateStudent(student);
+        var err = appRepository.updateStudent(student);
         if (err != null) {
-            return new PayResponse(false,"update student failed : " + err.Message);
+            return new AppResponse(false,"update student failed : " + err.Message);
         }
 
         //add subscription.
         var subscriptionErr = subscription(studentID,classroomID,month);
 
         if (subscriptionErr != null) {
-            return new PayResponse(false,subscriptionErr.Message);
+            return new AppResponse(false,subscriptionErr.Message);
         }
 
 
-        return new PayResponse(true,"new amount :" + student.getAmount());
+        return new AppResponse(true,"new amount :" + student.getAmount());
     }
 
     private Err subscription(UUID studentID, UUID classroomID, String month) {
@@ -98,18 +101,18 @@ public class PayService {
 
     }
 
-    public PayResponse chargeAccount(UUID studentID, float amount){
-        return new PayResponse(true,"charge account successful");
+    public AppResponse chargeAccount(UUID studentID, float amount){
+        return new AppResponse(true,"charge account successful");
     }
 
 
 
     private Optional<ClassRoom> getClassRoomById(UUID classRoomId) {
-        return payRepository.findClassRoomByID(classRoomId);
+        return appRepository.findClassRoomByID(classRoomId);
     }
 
     private Optional<Student> getStudentByID(UUID studentID) {
-        return payRepository.findStudentByID(studentID);
+        return appRepository.findStudentByID(studentID);
     }
 
 

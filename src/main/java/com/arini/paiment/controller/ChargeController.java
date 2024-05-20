@@ -2,9 +2,8 @@ package com.arini.paiment.controller;
 
 
 import com.arini.paiment.model.AppResponse;
-import com.arini.paiment.service.PayService;
+import com.arini.paiment.service.ChargeService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,32 +13,19 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/pay")
-public class PayController {
+public class ChargeController {
 
-    private final PayService payService;
-    private final JdbcTemplate jdbcTemplate;
+    private final ChargeService chargeService;;
 
-    public PayController(JdbcTemplate jdbcTemplate, PayService payService) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.payService = payService;
+    public ChargeController(ChargeService chargeService) {
+        this.chargeService = chargeService;
     }
 
-    @GetMapping("/test-connection")
-    public String testConnection() {
-        try {
-            jdbcTemplate.execute("SELECT 1");
-            return "Connection successful!";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Connection failed: " + e.getMessage();
-        }
-    }
 
     @GetMapping("/{classRoomID}/student/{studentID}/month/{month}")
-    public ResponseEntity<AppResponse> payClassRoom(@PathVariable UUID classRoomID, @PathVariable UUID studentID, @PathVariable String month) {
-        System.out.println("id = " + classRoomID);
+    public ResponseEntity<AppResponse> payClassRoom(@PathVariable UUID studentID, @PathVariable float amount) {
 
-               return ResponseEntity.ok(payService.payClassRoom(classRoomID,studentID,month));
+               return ResponseEntity.ok(chargeService.chargeAccount(studentID,amount));
 
     }
 
