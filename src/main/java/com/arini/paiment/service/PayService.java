@@ -2,13 +2,13 @@ package com.arini.paiment.service;
 
 
 import com.arini.paiment.model.ClassRoom;
+import com.arini.paiment.model.Err;
 import com.arini.paiment.model.PayResponse;
 import com.arini.paiment.model.Student;
 import com.arini.paiment.repository.PayRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.text.ParseException;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,18 +23,17 @@ public class PayService {
 
 
     @Transactional
-    public PayResponse payClassRoom(UUID classroom, UUID studentID ) {
+    public PayResponse payClassRoom(UUID classroomID, UUID studentID, String month) {
 
         Student student;
         ClassRoom classRoom;
-        var classRoomOption = getClassRoomById(classroom);
+        var classRoomOption = getClassRoomById(classroomID);
         if (classRoomOption.isPresent()){
              classRoom = classRoomOption.get();
         }
         else {
             return new PayResponse(false,"classroom not found");
         }
-//        check if already purchased
 
 
        var  studentOption = getStudentByID(studentID);
@@ -44,6 +43,14 @@ public class PayService {
         else {
             return new PayResponse(false,"student not found");
         }
+
+        //        check if already purchased
+        var checkPurchasedErr =  payRepository.CheckPurchased(studentID,classroomID,month);
+
+        if (checkPurchasedErr != null){
+            return new PayResponse(false,checkPurchasedErr.Message);
+        }
+
 
         var studentAmount = student.getAmount();
         var classRoomPrice = classRoom.getPrice();
@@ -61,8 +68,34 @@ public class PayService {
         }
 
         //add subscription.
+        var subscriptionErr = subscription(studentID,classroomID,month);
+
+        if (subscriptionErr != null) {
+            return new PayResponse(false,subscriptionErr.Message);
+        }
+
 
         return new PayResponse(true,"new amount :" + student.getAmount());
+    }
+
+    private Err subscription(UUID studentID, UUID classroomID, String month) {
+
+        //        check if already purchased
+        Err err ;
+         err =  payRepository.CheckPurchased(studentID,classroomID,month);
+        if (err == null) {
+            err = createSubscription( studentID,  classroomID,  month);
+            return err;
+        }
+
+        err =  payRepository.payMonth(studentID, classroomID, month);
+
+        return err;
+    }
+
+    private Err createSubscription(UUID studentID, UUID classroomID, String month) {
+      return  payRepository.CreateSubscription(studentID, classroomID,month);
+
     }
 
     public PayResponse chargeAccount(UUID studentID, float amount){

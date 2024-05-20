@@ -35,10 +35,10 @@ public class PayController {
     }
 
     @GetMapping("/{classRoomID}/student/{studentID}")
-    public ResponseEntity<PayResponse> getClassroomById(@PathVariable UUID classRoomID, @PathVariable UUID studentID) {
+    public ResponseEntity<PayResponse> getClassroomById(@PathVariable UUID classRoomID, @PathVariable UUID studentID,String month) {
         System.out.println("id = " + classRoomID);
 
-               return ResponseEntity.ok(payService.payClassRoom(classRoomID,studentID));
+               return ResponseEntity.ok(payService.payClassRoom(classRoomID,studentID,month));
 
     }
 

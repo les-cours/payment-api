@@ -46,6 +46,13 @@ public class PayRepository {
         }
     };
 
+    private RowMapper<Boolean> booleanRowMapper = new RowMapper<Boolean>() {
+        @Override
+        public Boolean mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return rs.getBoolean(1);
+        }
+    };
+
 
 
 
@@ -60,11 +67,10 @@ public class PayRepository {
         return jdbcTemplate.query(FIND_STUDENT_QUERY, new Object[]{id}, studentRowMapper)
                 .stream().findFirst();
     }
-
-
+    
     public Err UpdateStudent(Student student) {
         String sql = "UPDATE students SET amount = ? WHERE student_id = ?;";
-        Err err = new Err();
+        Err err = new Err("");
 
         try{
             jdbcTemplate.update(sql, student.getAmount(), student.getStudentID());
@@ -74,5 +80,36 @@ public class PayRepository {
             return err;
         }
 
+    }
+
+    public Err CheckPurchased(UUID studentID, UUID classroomID, String month) {
+        String sql = "SELECT EXISTS(SELECT 1 FROM  subscriptions WHERE classroom_id = ? AND student_id = ? LIMIT 1 ;";
+        var rs = jdbcTemplate.query(sql, new Object[]{classroomID,studentID}, booleanRowMapper).stream().findFirst();
+
+        if (!rs.isPresent()) {
+            return new Err("err 500.");
+        }
+
+       if ( rs.get() ) {
+           return  new Err("already purchased.");
+       }
+       return null;
+    }
+
+    public Err CreateSubscription(UUID studentID, UUID classroomID, String month) {
+        String sql = "INSERT INTO subcriptions (student_id, classroom_id," + month +") VALUES (?, ?,true)";
+        try {
+             jdbcTemplate.update(sql, studentID, classroomID, month);
+        }catch (DataAccessException e) {
+            return new Err(e.getMessage());
+        }
+
+
+        return null;
+    }
+
+    public Err payMonth(UUID studentID, UUID classroomID, String month) {
+
+        return null;
     }
 }
