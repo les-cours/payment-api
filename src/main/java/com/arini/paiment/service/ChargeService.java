@@ -4,10 +4,13 @@ import com.arini.paiment.model.AppResponse;
 import com.arini.paiment.model.Student;
 import com.arini.paiment.repository.AppRepository;
 import com.arini.paiment.repository.ChargeRepository;
+import jakarta.websocket.server.ServerEndpoint;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
 public class ChargeService {
 
     private final ChargeRepository chargeRepository;
@@ -17,7 +20,7 @@ public class ChargeService {
         this.chargeRepository = chargeRepository;
         this.appRepository = appRepository;
     }
-
+    
 
 
 
@@ -43,4 +46,26 @@ public class ChargeService {
 
         return new AppResponse(true,"account charged successfully.");
     }
+
+    public AppResponse chargeAccountByPaymentCode(UUID studentID, String paymentCode) {
+        var amount = getAmountByPaymentCode(paymentCode);
+        if (amount == null) {
+            return new AppResponse(false,"wrong code.");
+        }
+       return chargeAccount(studentID,amount);
+    }
+
+    private Float getAmountByPaymentCode(String paymentCode) {
+        return chargeRepository.getAmountByPaymentCode(paymentCode);
+    }
+
+    public AppResponse generatePaymentCode(float amount){
+        String code = UUID.randomUUID().toString().replace("-","").toUpperCase();
+        var err = chargeRepository.SavePaymentCode(code,amount);
+       if (err != null) {
+           return new AppResponse(false, err.Message);
+       }
+       return new AppResponse(true,"payment code generated successfully.",code);
+    }
+
 }

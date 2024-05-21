@@ -17,23 +17,11 @@ import java.util.UUID;
 public class PayController {
 
     private final PayService payService;
-    private final JdbcTemplate jdbcTemplate;
 
     public PayController(JdbcTemplate jdbcTemplate, PayService payService) {
-        this.jdbcTemplate = jdbcTemplate;
         this.payService = payService;
     }
 
-    @GetMapping("/test-connection")
-    public String testConnection() {
-        try {
-            jdbcTemplate.execute("SELECT 1");
-            return "Connection successful!";
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Connection failed: " + e.getMessage();
-        }
-    }
 
     @GetMapping("/{classRoomID}/student/{studentID}/month/{month}")
     public ResponseEntity<AppResponse> payClassRoom(@PathVariable UUID classRoomID, @PathVariable UUID studentID, @PathVariable String month) {

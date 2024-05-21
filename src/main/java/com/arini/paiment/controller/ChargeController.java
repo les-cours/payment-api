@@ -2,17 +2,16 @@ package com.arini.paiment.controller;
 
 
 import com.arini.paiment.model.AppResponse;
+import com.arini.paiment.model.ChargeAccountRequest;
+import com.arini.paiment.model.GeneratePaymentCodeRequest;
 import com.arini.paiment.service.ChargeService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/pay")
+@RequestMapping("/")
 public class ChargeController {
 
     private final ChargeService chargeService;;
@@ -22,10 +21,17 @@ public class ChargeController {
     }
 
 
-    @GetMapping("/{classRoomID}/student/{studentID}/month/{month}")
-    public ResponseEntity<AppResponse> payClassRoom(@PathVariable UUID studentID, @PathVariable float amount) {
+    @PostMapping("/charge-account")
+    public ResponseEntity<AppResponse> chargeAccount(@RequestBody ChargeAccountRequest req ) {
 
-               return ResponseEntity.ok(chargeService.chargeAccount(studentID,amount));
+               return ResponseEntity.ok(chargeService.chargeAccountByPaymentCode(req.getStudentID(),req.getCode()));
+
+    }
+
+    @PostMapping("/generate-payment-code")
+    public ResponseEntity<AppResponse> generatePaymentCode(@RequestBody GeneratePaymentCodeRequest req) {
+
+        return ResponseEntity.ok(chargeService.generatePaymentCode(req.getAmount()));
 
     }
 

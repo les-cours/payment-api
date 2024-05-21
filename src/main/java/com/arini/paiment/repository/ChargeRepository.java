@@ -31,20 +31,31 @@ public class ChargeRepository {
         }
     };
 
+    private RowMapper<Float> floatRowMapper = new RowMapper<Float>() {
+        @Override
+        public Float mapRow(ResultSet rs, int rowNum) throws SQLException {
+            return rs.getFloat(1);
+        }
+    };
 
+    public Err SavePaymentCode(String code, float amount) {
 
+        try {
+            jdbcTemplate.update("insert into payment_codes (code, amount) values (?, ?)", code, amount);
+            return null;
+        }catch (DataAccessException e){
+            return new Err(e.getMessage());
+        }
+    }
 
 
     public Err UpdateStudent(Student student) {
         String sql = "UPDATE students SET amount = ? WHERE student_id = ?;";
-        Err err = new Err("");
-
         try{
             jdbcTemplate.update(sql, student.getAmount(), student.getStudentID());
             return null;
         }catch (DataAccessException e){
-            err.Message = e.getMessage();
-            return err;
+           return new Err(e.getMessage());
         }
 
     }
@@ -53,7 +64,7 @@ public class ChargeRepository {
         String sql = "SELECT EXISTS(SELECT 1 FROM  subscriptions WHERE classroom_id = ? AND student_id = ? LIMIT 1 ;";
         var rs = jdbcTemplate.query(sql, new Object[]{classroomID,studentID}, booleanRowMapper).stream().findFirst();
 
-        if (!rs.isPresent()) {
+        if (rs.isEmpty()) {
             return new Err("err 500.");
         }
 
@@ -85,5 +96,14 @@ public class ChargeRepository {
 
 
         return null;
+    }
+
+    public Float getAmountByPaymentCode(String paymentCode) {
+
+        String FIND_STUDENT_QUERY = "select amount from payment_codes where code = ?;";//and used = false;
+         var rs =  jdbcTemplate.query(FIND_STUDENT_QUERY, new Object[]{paymentCode}, floatRowMapper)
+                .stream().findFirst();
+        return rs.orElse(null);
+
     }
 }
