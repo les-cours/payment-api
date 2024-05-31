@@ -1,0 +1,81 @@
+package com.arini.paiment;
+
+import com.arini.paiment.api.*;
+import com.arini.paiment.model.Err;
+import com.arini.paiment.service.ChargeService;
+import com.arini.paiment.service.PayService;
+import io.grpc.Status;
+import io.grpc.stub.StreamObserver;
+import net.devh.boot.grpc.server.service.GrpcService;
+
+import java.util.UUID;
+
+@GrpcService
+public class PaymentServiceGRPC extends PaymentServiceGrpc.PaymentServiceImplBase{
+
+
+	private final ChargeService chargeService;
+	private final PayService payService;
+    public PaymentServiceGRPC(ChargeService chargeService, PayService payService) {
+        this.chargeService = chargeService;
+		this.payService = payService;
+    }
+
+
+	@Override
+	public void chargeAccount(ChargeAccountRequest request, StreamObserver<AppResponse> responseObserver) {
+
+		UUID studentID = UUID.fromString(request.getStudentID());
+		var res = chargeService.chargeAccountByPaymentCode(studentID,request.getCode());
+		if (!res.isSuccess()) {
+			System.err.println(res.getMessage());
+			ErrInternal(responseObserver, res.getMessage());
+		}
+
+
+		var response  = AppResponse.newBuilder().setMessage(res.getMessage()).build();
+		responseObserver.onNext(response);
+		responseObserver.onCompleted();
+	}
+
+	@Override
+	public void generatePaymentCode(GeneratePaymentCodeRequest request, StreamObserver<AppResponse> responseObserver) {
+
+		var res =  chargeService.generatePaymentCode(request.getAmount());
+
+		if (!res.isSuccess()) {
+			System.err.println(res.getMessage());
+			ErrInternal(responseObserver, res.getMessage());
+		}
+
+
+		var response = AppResponse.newBuilder().setMessage(res.getData().toString()).build();
+		responseObserver.onNext(response);
+		responseObserver.onCompleted();
+	}
+
+	@Override
+	public void payClassRoom(PayClassRoomRequest request, StreamObserver<AppResponse> responseObserver) {
+
+
+		var res = payService.payClassRoom(UUID.fromString(request.getClassRoomID()),UUID.fromString(request.getStudentID()),request.getMonth());
+
+
+		if (!res.isSuccess()) {
+			System.err.println(res.getMessage());
+			ErrInternal(responseObserver, res.getMessage());
+		}
+
+
+		var response = AppResponse.newBuilder().setMessage(res.getMessage()).build();
+		responseObserver.onNext(response);
+		responseObserver.onCompleted();
+	}
+
+
+	private static void ErrInternal(StreamObserver<AppResponse> responseObserver,String message) {
+
+		var status = Status.INTERNAL.withDescription(message);
+		responseObserver.onError(status.asException());
+	}
+}

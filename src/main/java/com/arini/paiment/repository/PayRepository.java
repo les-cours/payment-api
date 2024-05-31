@@ -20,7 +20,6 @@ public class PayRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-
     private RowMapper<Boolean> booleanRowMapper = new RowMapper<Boolean>() {
         @Override
         public Boolean mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -28,12 +27,9 @@ public class PayRepository {
         }
     };
 
-
-
-
-    public Err CheckPurchased(UUID studentID, UUID classroomID, String month) {
-        String sql = "SELECT EXISTS(SELECT 1 FROM  subscriptions WHERE classroom_id = ? AND student_id = ? LIMIT 1 ;";
-        var rs = jdbcTemplate.query(sql, new Object[]{classroomID,studentID}, booleanRowMapper).stream().findFirst();
+    public Err CheckPurchased(UUID studentID, UUID classroomID, int month) {
+        String sql = "SELECT EXISTS(SELECT 1 FROM  subscription WHERE classroom_id = ? AND student_id = ? AND month_id = ? LIMIT 1);";
+        var rs = jdbcTemplate.query(sql, new Object[]{classroomID,studentID,month}, booleanRowMapper).stream().findFirst();
 
         if (!rs.isPresent()) {
             return new Err("err 500.");
@@ -45,8 +41,8 @@ public class PayRepository {
        return null;
     }
 
-    public Err CreateSubscription(UUID studentID, UUID classroomID, String month) {
-        String sql = "INSERT INTO subcriptions (student_id, classroom_id, ?) VALUES (?, ?,true)";
+    public Err CreateSubscription(UUID studentID, UUID classroomID, int month) {
+        String sql = "INSERT INTO subscription (student_id, classroom_id, month_id) VALUES (?, ?,?);";
         try {
              jdbcTemplate.update(sql, studentID, classroomID,month);
         }catch (DataAccessException e) {
@@ -57,15 +53,4 @@ public class PayRepository {
         return null;
     }
 
-    public Err payMonth(UUID studentID, UUID classroomID, String month) {
-        String sql = "UPDATE subscriptions SET ? = true WHERE classroom_id = ? AND student_id = ?;";
-        try {
-            jdbcTemplate.update(sql,month, studentID, classroomID );
-        }catch (DataAccessException e) {
-            return new Err(e.getMessage());
-        }
-
-
-        return null;
-    }
 }
