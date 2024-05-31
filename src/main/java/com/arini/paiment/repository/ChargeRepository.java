@@ -24,12 +24,6 @@ public class ChargeRepository {
     }
 
 
-    private RowMapper<Boolean> booleanRowMapper = new RowMapper<Boolean>() {
-        @Override
-        public Boolean mapRow(ResultSet rs, int rowNum) throws SQLException {
-            return rs.getBoolean(1);
-        }
-    };
 
     private RowMapper<Float> floatRowMapper = new RowMapper<Float>() {
         @Override
@@ -48,62 +42,14 @@ public class ChargeRepository {
         }
     }
 
-
-    public Err UpdateStudent(Student student) {
-        String sql = "UPDATE students SET amount = ? WHERE student_id = ?;";
-        try{
-            jdbcTemplate.update(sql, student.getAmount(), student.getStudentID());
-            return null;
-        }catch (DataAccessException e){
-           return new Err(e.getMessage());
-        }
-
-    }
-
-    public Err CheckPurchased(UUID studentID, UUID classroomID, String month) {
-        String sql = "SELECT EXISTS(SELECT 1 FROM  subscriptions WHERE classroom_id = ? AND student_id = ? LIMIT 1 ;";
-        var rs = jdbcTemplate.query(sql, new Object[]{classroomID,studentID}, booleanRowMapper).stream().findFirst();
-
-        if (rs.isEmpty()) {
-            return new Err("err 500.");
-        }
-
-       if ( rs.get() ) {
-           return  new Err("already purchased.");
-       }
-       return null;
-    }
-
-    public Err CreateSubscription(UUID studentID, UUID classroomID, String month) {
-        String sql = "INSERT INTO subcriptions (student_id, classroom_id, ?) VALUES (?, ?,true)";
-        try {
-             jdbcTemplate.update(sql, studentID, classroomID,month);
-        }catch (DataAccessException e) {
-            return new Err(e.getMessage());
-        }
-
-
-        return null;
-    }
-
-    public Err payMonth(UUID studentID, UUID classroomID, String month) {
-        String sql = "UPDATE subscriptions SET ? = true WHERE classroom_id = ? AND student_id = ?;";
-        try {
-            jdbcTemplate.update(sql,month, studentID, classroomID );
-        }catch (DataAccessException e) {
-            return new Err(e.getMessage());
-        }
-
-
-        return null;
-    }
-
     public Float getAmountByPaymentCode(String paymentCode) {
 
-        String FIND_STUDENT_QUERY = "select amount from payment_codes where code = ?;";//and used = false;
+        String FIND_STUDENT_QUERY = "select amount from payment_codes where code = ? AND used_at IS NULL;";
          var rs =  jdbcTemplate.query(FIND_STUDENT_QUERY, new Object[]{paymentCode}, floatRowMapper)
                 .stream().findFirst();
         return rs.orElse(null);
 
     }
+
+
 }

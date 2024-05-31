@@ -26,7 +26,7 @@ public class PayService {
 
 
     @Transactional
-    public AppResponse payClassRoom(UUID classroomID, UUID studentID, String month) {
+    public AppResponse payClassRoom(UUID classroomID, UUID studentID, int month) {
 
         Student student;
         ClassRoom classRoom;
@@ -81,7 +81,8 @@ public class PayService {
         return new AppResponse(true,"new amount :" + student.getAmount());
     }
 
-    private Err subscription(UUID studentID, UUID classroomID, String month) {
+
+    private Err subscription(UUID studentID, UUID classroomID, int month) {
 
         //        check if already purchased
         Err err ;
@@ -91,21 +92,15 @@ public class PayService {
             return err;
         }
 
-        err =  payRepository.payMonth(studentID, classroomID, month);
+        err =  payRepository.CreateSubscription(studentID, classroomID, month);
 
         return err;
     }
 
-    private Err createSubscription(UUID studentID, UUID classroomID, String month) {
+    private Err createSubscription(UUID studentID, UUID classroomID, int month) {
       return  payRepository.CreateSubscription(studentID, classroomID,month);
 
     }
-
-    public AppResponse chargeAccount(UUID studentID, float amount){
-        return new AppResponse(true,"charge account successful");
-    }
-
-
 
     private Optional<ClassRoom> getClassRoomById(UUID classRoomId) {
         return appRepository.findClassRoomByID(classRoomId);

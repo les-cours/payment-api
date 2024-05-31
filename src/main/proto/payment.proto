@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.arini.paiment.api";
+//option java_outer_classname = "HelloWorldProto";
+
+message ChargeAccountRequest {
+  string studentID = 1;
+  string code = 2;
+}
+
+message  AppResponse {
+  string message = 1;
+}
+
+message GeneratePaymentCodeRequest {
+  float amount = 1;
+}
+
+
+message PayClassRoomRequest {
+  string  classRoomID = 1;
+  string studentID = 2;
+  int32 month = 3;
+}
+
+service PaymentService {
+  rpc chargeAccount(ChargeAccountRequest) returns (AppResponse){};
+  rpc generatePaymentCode(GeneratePaymentCodeRequest)returns (AppResponse){};
+  rpc payClassRoom(PayClassRoomRequest)returns (AppResponse){};
+}
