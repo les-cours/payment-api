@@ -17,6 +17,13 @@ message GeneratePaymentCodeRequest {
   float amount = 1;
 }
 
+message GetAmountRequest {
+  string studentID = 1;
+}
+
+message GetAmountResponse {
+  float amount = 1;
+}
 
 message PayClassRoomRequest {
   string  classRoomID = 1;
@@ -28,4 +35,5 @@ service PaymentService {
   rpc chargeAccount(ChargeAccountRequest) returns (AppResponse){};
   rpc generatePaymentCode(GeneratePaymentCodeRequest)returns (AppResponse){};
   rpc payClassRoom(PayClassRoomRequest)returns (AppResponse){};
+  rpc getAmount(GetAmountRequest)returns (GetAmountResponse){};
 }

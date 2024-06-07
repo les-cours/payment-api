@@ -72,6 +72,29 @@ public class PaymentServiceGRPC extends PaymentServiceGrpc.PaymentServiceImplBas
 		responseObserver.onCompleted();
 	}
 
+	@Override
+	public void getAmount(GetAmountRequest request, StreamObserver<GetAmountResponse> responseObserver) {
+
+
+
+		var res = payService.getAmount(UUID.fromString(request.getStudentID()));
+
+
+		if (!res.isSuccess()) {
+			System.err.println(res.getMessage());
+			var status = Status.INTERNAL.withDescription(res.getMessage());
+			responseObserver.onError(status.asException());
+
+		}
+
+
+		var response = GetAmountResponse.newBuilder().setAmount((Float) res.getData()).build();
+		responseObserver.onNext(response);
+		responseObserver.onCompleted();
+	}
+
+
+
 
 	private static void ErrInternal(StreamObserver<AppResponse> responseObserver,String message) {
 

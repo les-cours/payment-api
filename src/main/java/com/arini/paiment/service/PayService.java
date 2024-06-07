@@ -111,6 +111,17 @@ public class PayService {
     }
 
 
+    public AppResponse getAmount(UUID studentID) {
+        Optional<Student> studentOptional = appRepository.findStudentByID(studentID);
+
+        if (!studentOptional.isPresent()){
+            return new AppResponse(false,"student doesnt exist.");
+        }
+        return new AppResponse(true,"",studentOptional.get().getAmount());
+    }
+
+
+
 //    private short searchForDiscount(String discountCode, ClassRoom classroom) {
 //        payRepository.SearchForDiscount(discountCode,classroom);
 //        return 99;
