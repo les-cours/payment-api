@@ -6,6 +6,7 @@ import com.arini.paiment.model.ClassRoom;
 import com.arini.paiment.model.Err;
 import com.arini.paiment.model.Student;
 import com.arini.paiment.repository.AppRepository;
+import com.arini.paiment.repository.ChargeRepository;
 import com.arini.paiment.repository.PayRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -18,10 +19,12 @@ public class PayService {
 
     private final PayRepository payRepository;
     private final AppRepository appRepository;
+    private final ChargeRepository chargeRepository;
 
-    public PayService(PayRepository payRepository,AppRepository appRepository) {
+    public PayService(PayRepository payRepository, AppRepository appRepository, ChargeRepository chargeRepository) {
         this.payRepository = payRepository;
         this.appRepository = appRepository;
+        this.chargeRepository = chargeRepository;
     }
 
 
@@ -120,6 +123,9 @@ public class PayService {
         return new AppResponse(true,"",studentOptional.get().getAmount());
     }
 
+    public AppResponse getAmountByCode(String code ) {
+        return new AppResponse(true,"",chargeRepository.getAmountOfCode(code));
+    }
 
 
 //    private short searchForDiscount(String discountCode, ClassRoom classroom) {

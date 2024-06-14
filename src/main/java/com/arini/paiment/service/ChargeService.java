@@ -28,7 +28,12 @@ public class ChargeService {
         if (amount == null) {
             return new AppResponse(false,"wrong code.");
         }
-       return chargeAccount(studentID,amount);
+       AppResponse res =  chargeAccount(studentID,amount);
+        if (!res.isSuccess()) {
+            return res;
+        }
+          chargeRepository.updatePaymentCodeStatus(paymentCode);
+        return res;
     }
 
     public AppResponse generatePaymentCode(float amount){

@@ -36,4 +36,5 @@ service PaymentService {
   rpc generatePaymentCode(GeneratePaymentCodeRequest)returns (AppResponse){};
   rpc payClassRoom(PayClassRoomRequest)returns (AppResponse){};
   rpc getAmount(GetAmountRequest)returns (GetAmountResponse){};
+  rpc getAmountByCode(GetAmountRequest)returns (GetAmountResponse){};
 }

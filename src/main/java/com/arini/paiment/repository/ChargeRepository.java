@@ -51,5 +51,18 @@ public class ChargeRepository {
 
     }
 
+    public float getAmountOfCode(String paymentCode) {
+        String FIND_STUDENT_QUERY = "select amount from payment_codes where code = ?;";
+        var rs =  jdbcTemplate.query(FIND_STUDENT_QUERY, new Object[]{paymentCode}, floatRowMapper)
+                .stream().findFirst();
+        return rs.orElse(0f);
 
+    }
+
+
+
+    public void updatePaymentCodeStatus(String paymentCode) {
+        String UPDATE_PAYMENT_CODE_STATUS = "UPDATE payment_codes SET used_at = NOW() WHERE code = ?";
+        jdbcTemplate.update(UPDATE_PAYMENT_CODE_STATUS, paymentCode);
+    }
 }
