@@ -16,9 +16,12 @@ public class PaymentServiceGRPC extends PaymentServiceGrpc.PaymentServiceImplBas
 
 	private final ChargeService chargeService;
 	private final PayService payService;
-    public PaymentServiceGRPC(ChargeService chargeService, PayService payService) {
+	private final LearningClient learningClientService;
+
+    public PaymentServiceGRPC(ChargeService chargeService, PayService payService,LearningClient learningClientService) {
         this.chargeService = chargeService;
 		this.payService = payService;
+		this.learningClientService = learningClientService;
     }
 
 
@@ -65,6 +68,19 @@ public class PaymentServiceGRPC extends PaymentServiceGrpc.PaymentServiceImplBas
 			System.err.println(res.getMessage());
 			ErrInternal(responseObserver, res.getMessage());
 		}
+
+		try {
+			Boolean success = learningClientService.addStudentToChatRoom(request.getClassRoomID(), request.getStudentID());
+			if (!success) {
+				System.err.println("can't add student to chat room");
+				ErrInternal(responseObserver, "can't add student to chat room");
+			}
+
+		}catch (Exception e){
+			System.err.println("=================here===================== " +e.getMessage());
+		}
+
+
 
 
 		var response = AppResponse.newBuilder().setMessage(res.getMessage()).build();

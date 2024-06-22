@@ -1,0 +1,16 @@
+syntax = "proto3";
+option go_package = "github.com/les-cours/learning-service/api/learning";
+option java_package = "com.arini.paiment.api";
+package learning;
+
+message OperationStatus{
+  bool success = 1;
+}
+message IDRequest {
+  string id = 1;
+  string userID = 2;
+}
+
+service LearningService {
+  rpc AddStudentToChatRoom(IDRequest)returns(OperationStatus){}
+}
